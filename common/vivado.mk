@@ -37,16 +37,19 @@
 CONFIG ?= config.mk
 -include ../$(CONFIG)
 
-SYN_FILES_REL = $(patsubst %, ../%, $(SYN_FILES))
-INC_FILES_REL = $(patsubst %, ../%, $(INC_FILES))
-XCI_FILES_REL = $(patsubst %, ../%, $(XCI_FILES))
-IP_TCL_FILES_REL = $(patsubst %, ../%, $(IP_TCL_FILES))
+SYN_FILES_REL = $(patsubst %, ./%, $(SYN_FILES))
+INC_FILES_REL = $(patsubst %, ./%, $(INC_FILES))
+XCI_FILES_REL = $(patsubst %, ./%, $(XCI_FILES))
+IP_TCL_FILES_REL = $(patsubst %, ./%, $(IP_TCL_FILES))
 
 ifdef XDC_FILES
-  XDC_FILES_REL = $(patsubst %, ../%, $(XDC_FILES))
+  XDC_FILES_REL = $(patsubst %, ./%, $(XDC_FILES))
 else
   XDC_FILES_REL = $(FPGA_TOP).xdc
 endif
+
+# number of threads
+JOBS ?= 24
 
 ###################################################################
 # Main Targets
@@ -94,7 +97,7 @@ distclean: clean
 %.runs/synth_1/%.dcp: %.xpr $(SYN_FILES_REL) $(INC_FILES_REL) $(XDC_FILES_REL)
 	echo "open_project $*.xpr" > run_synth.tcl
 	echo "reset_run synth_1" >> run_synth.tcl
-	echo "launch_runs -jobs 4 synth_1" >> run_synth.tcl
+	echo "launch_runs -jobs $(JOBS) synth_1" >> run_synth.tcl
 	echo "wait_on_run synth_1" >> run_synth.tcl
 	echo "exit" >> run_synth.tcl
 	vivado -nojournal -nolog -mode batch -source run_synth.tcl
@@ -103,7 +106,7 @@ distclean: clean
 %.runs/impl_1/%_routed.dcp: %.runs/synth_1/%.dcp
 	echo "open_project $*.xpr" > run_impl.tcl
 	echo "reset_run impl_1" >> run_impl.tcl
-	echo "launch_runs -jobs 4 impl_1" >> run_impl.tcl
+	echo "launch_runs -jobs $(JOBS) impl_1" >> run_impl.tcl
 	echo "wait_on_run impl_1" >> run_impl.tcl
 	echo "exit" >> run_impl.tcl
 	vivado -nojournal -nolog -mode batch -source run_impl.tcl

@@ -19,8 +19,10 @@ SYN_FILES += lib/ethernet/rtl/ptp_clock_cdc.v
 
 # XDC files
 XDC_FILES = src/constr/Ethernet10Gtest.xdc
+XDC_FILES += lib/ethernet/syn/vivado/eth_mac_fifo.tcl
+XDC_FILES += lib/ethernet/lib/axis/syn/vivado/axis_async_fifo.tcl
 
 # IP and BD
 IP_TCL_FILES = src/bd/system.tcl
 
-include ./common/vivado.mk
+include ../common/vivado.mk
