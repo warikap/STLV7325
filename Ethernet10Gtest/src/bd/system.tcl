@@ -20,14 +20,13 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2020.2
+set scripts_vivado_version 2023.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
    puts ""
-   catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
+   common::send_gid_msg -ssname BD::TCL -id 2040 -severity "CRITICAL WARNING" "This script was generated using Vivado <$scripts_vivado_version> without IP versions in the create_bd_cell commands, but is now being run in <$current_vivado_version> of Vivado. There may have been changes to the IP between Vivado <$scripts_vivado_version> and <$current_vivado_version>, which could impact the functionality and configuration of the design."
 
-   return 1
 }
 
 ################################################################
@@ -130,12 +129,12 @@ set bCheckIPsPassed 1
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
-xilinx.com:ip:xlconstant:1.1\
-xilinx.com:ip:clk_wiz:6.0\
-xilinx.com:ip:fifo_generator:13.2\
-xilinx.com:ip:proc_sys_reset:5.0\
-xilinx.com:ip:system_ila:1.1\
-xilinx.com:ip:ten_gig_eth_pcs_pma:6.0\
+xilinx.com:ip:xlconstant:*\
+xilinx.com:ip:clk_wiz:*\
+xilinx.com:ip:fifo_generator:*\
+xilinx.com:ip:proc_sys_reset:*\
+xilinx.com:ip:system_ila:*\
+xilinx.com:ip:ten_gig_eth_pcs_pma:*\
 "
 
    set list_ips_missing ""
@@ -246,23 +245,22 @@ proc create_root_design { parentCell } {
   set txp_1 [ create_bd_port -dir O txp_1 ]
 
   # Create instance: ONE, and set properties
-  set ONE [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 ONE ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {1} \
- ] $ONE
+  set ONE [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant ONE ]
+  set_property CONFIG.CONST_VAL {1} $ONE
+
 
   # Create instance: ZERO, and set properties
-  set ZERO [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 ZERO ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
- ] $ZERO
+  set ZERO [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant ZERO ]
+  set_property CONFIG.CONST_VAL {0} $ZERO
+
 
   # Create instance: clk_wiz, and set properties
-  set clk_wiz [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz ]
-  set_property -dict [ list \
-   CONFIG.RESET_PORT {resetn} \
-   CONFIG.RESET_TYPE {ACTIVE_LOW} \
- ] $clk_wiz
+  set clk_wiz [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz clk_wiz ]
+  set_property -dict [list \
+    CONFIG.RESET_PORT {resetn} \
+    CONFIG.RESET_TYPE {ACTIVE_LOW} \
+  ] $clk_wiz
+
 
   # Create instance: eth_mac_10g_fifo_core_0, and set properties
   set block_name eth_mac_10g_fifo_core
@@ -287,120 +285,101 @@ proc create_root_design { parentCell } {
    }
   
   # Create instance: fifo_generator_0, and set properties
-  set fifo_generator_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 fifo_generator_0 ]
-  set_property -dict [ list \
-   CONFIG.Empty_Threshold_Assert_Value_axis {4094} \
-   CONFIG.Empty_Threshold_Assert_Value_rach {14} \
-   CONFIG.Empty_Threshold_Assert_Value_wach {14} \
-   CONFIG.Empty_Threshold_Assert_Value_wrch {14} \
-   CONFIG.Enable_Safety_Circuit {true} \
-   CONFIG.Enable_TLAST {true} \
-   CONFIG.FIFO_Application_Type_axis {Packet_FIFO} \
-   CONFIG.FIFO_Implementation_rach {Common_Clock_Distributed_RAM} \
-   CONFIG.FIFO_Implementation_wach {Common_Clock_Distributed_RAM} \
-   CONFIG.FIFO_Implementation_wrch {Common_Clock_Distributed_RAM} \
-   CONFIG.Full_Flags_Reset_Value {1} \
-   CONFIG.Full_Threshold_Assert_Value_axis {4095} \
-   CONFIG.Full_Threshold_Assert_Value_rach {15} \
-   CONFIG.Full_Threshold_Assert_Value_wach {15} \
-   CONFIG.Full_Threshold_Assert_Value_wrch {15} \
-   CONFIG.HAS_TKEEP {true} \
-   CONFIG.INTERFACE_TYPE {AXI_STREAM} \
-   CONFIG.Input_Depth_axis {4096} \
-   CONFIG.Reset_Type {Asynchronous_Reset} \
-   CONFIG.TDATA_NUM_BYTES {8} \
-   CONFIG.TKEEP_WIDTH {8} \
-   CONFIG.TSTRB_WIDTH {8} \
-   CONFIG.TUSER_WIDTH {1} \
- ] $fifo_generator_0
+  set fifo_generator_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator fifo_generator_0 ]
+  set_property -dict [list \
+    CONFIG.Enable_Safety_Circuit {true} \
+    CONFIG.Enable_TLAST {true} \
+    CONFIG.FIFO_Application_Type_axis {Packet_FIFO} \
+    CONFIG.FIFO_Implementation_rach {Common_Clock_Distributed_RAM} \
+    CONFIG.FIFO_Implementation_wach {Common_Clock_Distributed_RAM} \
+    CONFIG.FIFO_Implementation_wrch {Common_Clock_Distributed_RAM} \
+    CONFIG.Full_Flags_Reset_Value {1} \
+    CONFIG.HAS_TKEEP {true} \
+    CONFIG.INTERFACE_TYPE {AXI_STREAM} \
+    CONFIG.Input_Depth_axis {4096} \
+    CONFIG.TDATA_NUM_BYTES {8} \
+    CONFIG.TUSER_WIDTH {1} \
+  ] $fifo_generator_0
+
 
   # Create instance: fifo_generator_1, and set properties
-  set fifo_generator_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator:13.2 fifo_generator_1 ]
-  set_property -dict [ list \
-   CONFIG.Empty_Threshold_Assert_Value_axis {4094} \
-   CONFIG.Empty_Threshold_Assert_Value_rach {14} \
-   CONFIG.Empty_Threshold_Assert_Value_wach {14} \
-   CONFIG.Empty_Threshold_Assert_Value_wrch {14} \
-   CONFIG.Enable_Safety_Circuit {true} \
-   CONFIG.Enable_TLAST {true} \
-   CONFIG.FIFO_Application_Type_axis {Packet_FIFO} \
-   CONFIG.FIFO_Implementation_rach {Common_Clock_Distributed_RAM} \
-   CONFIG.FIFO_Implementation_wach {Common_Clock_Distributed_RAM} \
-   CONFIG.FIFO_Implementation_wrch {Common_Clock_Distributed_RAM} \
-   CONFIG.Full_Flags_Reset_Value {1} \
-   CONFIG.Full_Threshold_Assert_Value_axis {4095} \
-   CONFIG.Full_Threshold_Assert_Value_rach {15} \
-   CONFIG.Full_Threshold_Assert_Value_wach {15} \
-   CONFIG.Full_Threshold_Assert_Value_wrch {15} \
-   CONFIG.HAS_TKEEP {true} \
-   CONFIG.INTERFACE_TYPE {AXI_STREAM} \
-   CONFIG.Input_Depth_axis {4096} \
-   CONFIG.Reset_Type {Asynchronous_Reset} \
-   CONFIG.TDATA_NUM_BYTES {8} \
-   CONFIG.TKEEP_WIDTH {8} \
-   CONFIG.TSTRB_WIDTH {8} \
-   CONFIG.TUSER_WIDTH {1} \
- ] $fifo_generator_1
+  set fifo_generator_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fifo_generator fifo_generator_1 ]
+  set_property -dict [list \
+    CONFIG.Enable_Safety_Circuit {true} \
+    CONFIG.Enable_TLAST {true} \
+    CONFIG.FIFO_Application_Type_axis {Packet_FIFO} \
+    CONFIG.FIFO_Implementation_rach {Common_Clock_Distributed_RAM} \
+    CONFIG.FIFO_Implementation_wach {Common_Clock_Distributed_RAM} \
+    CONFIG.FIFO_Implementation_wrch {Common_Clock_Distributed_RAM} \
+    CONFIG.Full_Flags_Reset_Value {1} \
+    CONFIG.HAS_TKEEP {true} \
+    CONFIG.INTERFACE_TYPE {AXI_STREAM} \
+    CONFIG.Input_Depth_axis {4096} \
+    CONFIG.TDATA_NUM_BYTES {8} \
+    CONFIG.TUSER_WIDTH {1} \
+  ] $fifo_generator_1
+
 
   # Create instance: proc_sys_reset_0, and set properties
-  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0 ]
+  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_0 ]
 
   # Create instance: proc_sys_reset_1, and set properties
-  set proc_sys_reset_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_1 ]
+  set proc_sys_reset_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_1 ]
 
   # Create instance: system_ila_0, and set properties
-  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
-  set_property -dict [ list \
-   CONFIG.C_BRAM_CNT {137} \
-   CONFIG.C_DATA_DEPTH {32768} \
-   CONFIG.C_MON_TYPE {MIX} \
-   CONFIG.C_NUM_MONITOR_SLOTS {2} \
-   CONFIG.C_NUM_OF_PROBES {2} \
-   CONFIG.C_PROBE0_WIDTH {8} \
-   CONFIG.C_PROBE1_WIDTH {8} \
-   CONFIG.C_PROBE3_WIDTH {1} \
-   CONFIG.C_PROBE_WIDTH_PROPAGATION {MANUAL} \
-   CONFIG.C_SLOT {1} \
-   CONFIG.C_SLOT_0_AXIS_TDATA_WIDTH {64} \
-   CONFIG.C_SLOT_0_AXIS_TDEST_WIDTH {1} \
-   CONFIG.C_SLOT_0_AXIS_TID_WIDTH {0} \
-   CONFIG.C_SLOT_0_AXIS_TUSER_WIDTH {1} \
-   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0} \
-   CONFIG.C_SLOT_1_AXIS_TDATA_WIDTH {64} \
-   CONFIG.C_SLOT_1_AXIS_TDEST_WIDTH {1} \
-   CONFIG.C_SLOT_1_AXIS_TID_WIDTH {0} \
-   CONFIG.C_SLOT_1_AXIS_TUSER_WIDTH {1} \
-   CONFIG.C_SLOT_1_AXI_ADDR_WIDTH {AUTO} \
-   CONFIG.C_SLOT_1_AXI_DATA_WIDTH {64} \
-   CONFIG.C_SLOT_1_AXI_ID_WIDTH {AUTO} \
-   CONFIG.C_SLOT_1_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0} \
- ] $system_ila_0
+  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila system_ila_0 ]
+  set_property -dict [list \
+    CONFIG.C_DATA_DEPTH {16384} \
+    CONFIG.C_MON_TYPE {MIX} \
+    CONFIG.C_NUM_MONITOR_SLOTS {2} \
+    CONFIG.C_NUM_OF_PROBES {2} \
+    CONFIG.C_PROBE0_WIDTH {8} \
+    CONFIG.C_PROBE1_WIDTH {8} \
+    CONFIG.C_PROBE3_WIDTH {1} \
+    CONFIG.C_PROBE_WIDTH_PROPAGATION {MANUAL} \
+    CONFIG.C_SLOT {1} \
+    CONFIG.C_SLOT_0_AXIS_TDATA_WIDTH {64} \
+    CONFIG.C_SLOT_0_AXIS_TDEST_WIDTH {1} \
+    CONFIG.C_SLOT_0_AXIS_TID_WIDTH {0} \
+    CONFIG.C_SLOT_0_AXIS_TUSER_WIDTH {1} \
+    CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0} \
+    CONFIG.C_SLOT_1_AXIS_TDATA_WIDTH {64} \
+    CONFIG.C_SLOT_1_AXIS_TDEST_WIDTH {1} \
+    CONFIG.C_SLOT_1_AXIS_TID_WIDTH {0} \
+    CONFIG.C_SLOT_1_AXIS_TUSER_WIDTH {1} \
+    CONFIG.C_SLOT_1_AXI_ADDR_WIDTH {AUTO} \
+    CONFIG.C_SLOT_1_AXI_DATA_WIDTH {64} \
+    CONFIG.C_SLOT_1_AXI_ID_WIDTH {AUTO} \
+    CONFIG.C_SLOT_1_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0} \
+  ] $system_ila_0
+
 
   # Create instance: ten_gig_eth_pcs_pma_0, and set properties
-  set ten_gig_eth_pcs_pma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ten_gig_eth_pcs_pma:6.0 ten_gig_eth_pcs_pma_0 ]
-  set_property -dict [ list \
-   CONFIG.MDIO_Management {false} \
-   CONFIG.SupportLevel {1} \
- ] $ten_gig_eth_pcs_pma_0
+  set ten_gig_eth_pcs_pma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ten_gig_eth_pcs_pma ten_gig_eth_pcs_pma_0 ]
+  set_property -dict [list \
+    CONFIG.MDIO_Management {false} \
+    CONFIG.SupportLevel {1} \
+  ] $ten_gig_eth_pcs_pma_0
+
 
   # Create instance: ten_gig_eth_pcs_pma_1, and set properties
-  set ten_gig_eth_pcs_pma_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ten_gig_eth_pcs_pma:6.0 ten_gig_eth_pcs_pma_1 ]
-  set_property -dict [ list \
-   CONFIG.MDIO_Management {false} \
- ] $ten_gig_eth_pcs_pma_1
+  set ten_gig_eth_pcs_pma_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ten_gig_eth_pcs_pma ten_gig_eth_pcs_pma_1 ]
+  set_property CONFIG.MDIO_Management {false} $ten_gig_eth_pcs_pma_1
+
 
   # Create instance: xlconstant_2, and set properties
-  set xlconstant_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_2 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {5} \
-   CONFIG.CONST_WIDTH {3} \
- ] $xlconstant_2
+  set xlconstant_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant xlconstant_2 ]
+  set_property -dict [list \
+    CONFIG.CONST_VAL {5} \
+    CONFIG.CONST_WIDTH {3} \
+  ] $xlconstant_2
+
 
   # Create interface connections
   connect_bd_intf_net -intf_net eth_mac_10g_fifo_core_0_rx_axis [get_bd_intf_pins eth_mac_10g_fifo_core_1/rx_axis] [get_bd_intf_pins fifo_generator_1/S_AXIS]
-connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis] [get_bd_intf_pins fifo_generator_1/S_AXIS] [get_bd_intf_pins system_ila_0/SLOT_1_AXIS]
+connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis] [get_bd_intf_pins eth_mac_10g_fifo_core_1/rx_axis] [get_bd_intf_pins system_ila_0/SLOT_1_AXIS]
   connect_bd_intf_net -intf_net eth_mac_10g_fifo_core_0_rx_axis1 [get_bd_intf_pins eth_mac_10g_fifo_core_0/rx_axis] [get_bd_intf_pins fifo_generator_0/S_AXIS]
-connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis1] [get_bd_intf_pins fifo_generator_0/S_AXIS] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
+connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis1] [get_bd_intf_pins eth_mac_10g_fifo_core_0/rx_axis] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
   connect_bd_intf_net -intf_net eth_mac_10g_fifo_core_0_xgmii [get_bd_intf_pins eth_mac_10g_fifo_core_1/xgmii] [get_bd_intf_pins ten_gig_eth_pcs_pma_1/xgmii_interface]
   connect_bd_intf_net -intf_net eth_mac_10g_fifo_core_0_xgmii1 [get_bd_intf_pins eth_mac_10g_fifo_core_0/xgmii] [get_bd_intf_pins ten_gig_eth_pcs_pma_0/xgmii_interface]
   connect_bd_intf_net -intf_net fifo_generator_0_M_AXIS [get_bd_intf_pins eth_mac_10g_fifo_core_1/tx_axis] [get_bd_intf_pins fifo_generator_0/M_AXIS]
@@ -418,33 +397,33 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis1
   connect_bd_net -net configuration_vector_0_1 [get_bd_ports configuration_vector_0] [get_bd_pins ten_gig_eth_pcs_pma_0/configuration_vector]
   connect_bd_net -net configuration_vector_1_1 [get_bd_ports configuration_vector_1] [get_bd_pins ten_gig_eth_pcs_pma_1/configuration_vector]
   connect_bd_net -net proc_sys_reset_0_peripheral_reset [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins ten_gig_eth_pcs_pma_0/reset]
-  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins fifo_generator_0/s_aresetn] [get_bd_pins fifo_generator_1/s_aresetn] [get_bd_pins proc_sys_reset_1/peripheral_aresetn] [get_bd_pins system_ila_0/resetn]
-  connect_bd_net -net proc_sys_reset_1_peripheral_reset [get_bd_pins eth_mac_10g_fifo_core_0/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_0/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_0/tx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_1/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/tx_rst] [get_bd_pins proc_sys_reset_1/peripheral_reset]
+  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins proc_sys_reset_1/peripheral_aresetn] [get_bd_pins fifo_generator_0/s_aresetn] [get_bd_pins fifo_generator_1/s_aresetn] [get_bd_pins system_ila_0/resetn]
+  connect_bd_net -net proc_sys_reset_1_peripheral_reset [get_bd_pins proc_sys_reset_1/peripheral_reset] [get_bd_pins eth_mac_10g_fifo_core_0/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_0/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_0/tx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_1/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/tx_rst]
   connect_bd_net -net resetn_0_1 [get_bd_ports resetn] [get_bd_pins clk_wiz/resetn] [get_bd_pins proc_sys_reset_0/ext_reset_in]
   connect_bd_net -net rxn_0_1 [get_bd_ports rxn_0] [get_bd_pins ten_gig_eth_pcs_pma_0/rxn]
   connect_bd_net -net rxn_1_1 [get_bd_ports rxn_1] [get_bd_pins ten_gig_eth_pcs_pma_1/rxn]
   connect_bd_net -net rxp_0_1 [get_bd_ports rxp_0] [get_bd_pins ten_gig_eth_pcs_pma_0/rxp]
   connect_bd_net -net rxp_1_1 [get_bd_ports rxp_1] [get_bd_pins ten_gig_eth_pcs_pma_1/rxp]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_areset_datapathclk_out [get_bd_pins proc_sys_reset_1/ext_reset_in] [get_bd_pins ten_gig_eth_pcs_pma_0/areset_datapathclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/areset] [get_bd_pins ten_gig_eth_pcs_pma_1/areset_coreclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_core_status [get_bd_pins system_ila_0/probe0] [get_bd_pins ten_gig_eth_pcs_pma_0/core_status]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_coreclk_out [get_bd_pins eth_mac_10g_fifo_core_0/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_0/xgmii_clk] [get_bd_pins eth_mac_10g_fifo_core_1/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_1/xgmii_clk] [get_bd_pins fifo_generator_0/s_aclk] [get_bd_pins fifo_generator_1/s_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins system_ila_0/clk] [get_bd_pins ten_gig_eth_pcs_pma_0/coreclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/coreclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_drp_req [get_bd_pins ten_gig_eth_pcs_pma_0/drp_gnt] [get_bd_pins ten_gig_eth_pcs_pma_0/drp_req]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_areset_datapathclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/areset_datapathclk_out] [get_bd_pins proc_sys_reset_1/ext_reset_in] [get_bd_pins ten_gig_eth_pcs_pma_1/areset] [get_bd_pins ten_gig_eth_pcs_pma_1/areset_coreclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_core_status [get_bd_pins ten_gig_eth_pcs_pma_0/core_status] [get_bd_pins system_ila_0/probe0]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_coreclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/coreclk_out] [get_bd_pins eth_mac_10g_fifo_core_0/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_0/xgmii_clk] [get_bd_pins eth_mac_10g_fifo_core_1/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_1/xgmii_clk] [get_bd_pins fifo_generator_0/s_aclk] [get_bd_pins fifo_generator_1/s_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins system_ila_0/clk] [get_bd_pins ten_gig_eth_pcs_pma_1/coreclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_drp_req [get_bd_pins ten_gig_eth_pcs_pma_0/drp_req] [get_bd_pins ten_gig_eth_pcs_pma_0/drp_gnt]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_gtrxreset_out [get_bd_pins ten_gig_eth_pcs_pma_0/gtrxreset_out] [get_bd_pins ten_gig_eth_pcs_pma_1/gtrxreset]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_gttxreset_out [get_bd_pins ten_gig_eth_pcs_pma_0/gttxreset_out] [get_bd_pins ten_gig_eth_pcs_pma_1/gttxreset]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplllock_out [get_bd_pins proc_sys_reset_1/dcm_locked] [get_bd_pins ten_gig_eth_pcs_pma_0/qplllock_out] [get_bd_pins ten_gig_eth_pcs_pma_1/qplllock]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplllock_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplllock_out] [get_bd_pins proc_sys_reset_1/dcm_locked] [get_bd_pins ten_gig_eth_pcs_pma_1/qplllock]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutclk]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutrefclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutrefclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutrefclk]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_reset_counter_done_out [get_bd_pins ten_gig_eth_pcs_pma_0/reset_counter_done_out] [get_bd_pins ten_gig_eth_pcs_pma_1/reset_counter_done]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txn [get_bd_ports txn_0] [get_bd_pins ten_gig_eth_pcs_pma_0/txn]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txp [get_bd_ports txp_0] [get_bd_pins ten_gig_eth_pcs_pma_0/txp]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txn [get_bd_pins ten_gig_eth_pcs_pma_0/txn] [get_bd_ports txn_0]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txp [get_bd_pins ten_gig_eth_pcs_pma_0/txp] [get_bd_ports txp_0]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_txuserrdy_out [get_bd_pins ten_gig_eth_pcs_pma_0/txuserrdy_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txuserrdy]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk2_out [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk2_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk2]
   connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_core_status [get_bd_pins system_ila_0/probe1] [get_bd_pins ten_gig_eth_pcs_pma_1/core_status]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_drp_req [get_bd_pins ten_gig_eth_pcs_pma_1/drp_gnt] [get_bd_pins ten_gig_eth_pcs_pma_1/drp_req]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_txn [get_bd_ports txn_1] [get_bd_pins ten_gig_eth_pcs_pma_1/txn]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_txp [get_bd_ports txp_1] [get_bd_pins ten_gig_eth_pcs_pma_1/txp]
-  connect_bd_net -net xlconstant_2_dout [get_bd_pins ten_gig_eth_pcs_pma_0/pma_pmd_type] [get_bd_pins ten_gig_eth_pcs_pma_1/pma_pmd_type] [get_bd_pins xlconstant_2/dout]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_core_status [get_bd_pins ten_gig_eth_pcs_pma_1/core_status] [get_bd_pins system_ila_0/probe1]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_drp_req [get_bd_pins ten_gig_eth_pcs_pma_1/drp_req] [get_bd_pins ten_gig_eth_pcs_pma_1/drp_gnt]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_txn [get_bd_pins ten_gig_eth_pcs_pma_1/txn] [get_bd_ports txn_1]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_txp [get_bd_pins ten_gig_eth_pcs_pma_1/txp] [get_bd_ports txp_1]
+  connect_bd_net -net xlconstant_2_dout [get_bd_pins xlconstant_2/dout] [get_bd_pins ten_gig_eth_pcs_pma_0/pma_pmd_type] [get_bd_pins ten_gig_eth_pcs_pma_1/pma_pmd_type]
 
   # Create address segments
 

@@ -63,7 +63,7 @@ all: fpga
 fpga: $(FPGA_TOP).bit
 
 vivado: $(FPGA_TOP).xpr
-	vivado $(FPGA_TOP).xpr
+	vivado -nojournal -nolog $(FPGA_TOP).xpr
 
 tmpclean:
 	-rm -rf *.log *.jou *.cache *.gen *.hbs *.hw *.ip_user_files *.runs *.xpr *.html *.xml *.sim *.srcs *.str .Xil defines.v
