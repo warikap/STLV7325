@@ -23,6 +23,6 @@ XDC_FILES += lib/ethernet/syn/vivado/eth_mac_fifo.tcl
 XDC_FILES += lib/ethernet/lib/axis/syn/vivado/axis_async_fifo.tcl
 
 # IP and BD
-IP_TCL_FILES = src/bd/system.tcl
+TCL_FILES = src/bd/system.tcl
 
 include ../common/vivado.mk
