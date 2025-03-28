@@ -84,7 +84,7 @@ tmpclean:
 clean: tmpclean
 	cd $(PROJ_DIR) && rm -rf *.bit program.tcl
 
-distclean: clean
+distclean:
 	rm -rf $(PROJ_DIR)
 	rm -rf rev
 
