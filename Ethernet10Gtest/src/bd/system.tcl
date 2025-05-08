@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2024.1
+set scripts_vivado_version 2024.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -350,41 +350,97 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets eth_mac_10g_fifo_core_0_rx_axis1
   connect_bd_intf_net -intf_net ten_gig_eth_pcs_pma_1_core_gt_drp_interface [get_bd_intf_pins ten_gig_eth_pcs_pma_1/core_gt_drp_interface] [get_bd_intf_pins ten_gig_eth_pcs_pma_1/user_gt_drp_interface]
 
   # Create port connections
-  connect_bd_net -net ONE_dout [get_bd_pins ONE/dout] [get_bd_pins ten_gig_eth_pcs_pma_0/signal_detect] [get_bd_pins ten_gig_eth_pcs_pma_1/signal_detect]
-  connect_bd_net -net ZERO_dout [get_bd_pins ZERO/dout] [get_bd_pins ten_gig_eth_pcs_pma_0/sim_speedup_control] [get_bd_pins ten_gig_eth_pcs_pma_0/tx_fault] [get_bd_pins ten_gig_eth_pcs_pma_1/tx_fault]
-  connect_bd_net -net clk_in1_0_1 [get_bd_ports clk100] [get_bd_pins clk_wiz/clk_in1]
-  connect_bd_net -net clk_wiz_clk_out1 [get_bd_pins clk_wiz/clk_out1] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins ten_gig_eth_pcs_pma_0/dclk] [get_bd_pins ten_gig_eth_pcs_pma_1/dclk]
-  connect_bd_net -net clk_wiz_locked [get_bd_pins clk_wiz/locked] [get_bd_pins proc_sys_reset_0/dcm_locked]
-  connect_bd_net -net configuration_vector_0_1 [get_bd_ports configuration_vector_0] [get_bd_pins ten_gig_eth_pcs_pma_0/configuration_vector]
-  connect_bd_net -net configuration_vector_1_1 [get_bd_ports configuration_vector_1] [get_bd_pins ten_gig_eth_pcs_pma_1/configuration_vector]
-  connect_bd_net -net proc_sys_reset_0_peripheral_reset [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins ten_gig_eth_pcs_pma_0/reset]
-  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins proc_sys_reset_1/peripheral_aresetn] [get_bd_pins system_ila_0/resetn]
-  connect_bd_net -net proc_sys_reset_1_peripheral_reset [get_bd_pins proc_sys_reset_1/peripheral_reset] [get_bd_pins eth_mac_10g_fifo_core_0/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_0/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_0/tx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/logic_rst] [get_bd_pins eth_mac_10g_fifo_core_1/rx_rst] [get_bd_pins eth_mac_10g_fifo_core_1/tx_rst]
-  connect_bd_net -net resetn_0_1 [get_bd_ports resetn] [get_bd_pins clk_wiz/resetn] [get_bd_pins proc_sys_reset_0/ext_reset_in]
-  connect_bd_net -net rxn_0_1 [get_bd_ports rxn_0] [get_bd_pins ten_gig_eth_pcs_pma_0/rxn]
-  connect_bd_net -net rxn_1_1 [get_bd_ports rxn_1] [get_bd_pins ten_gig_eth_pcs_pma_1/rxn]
-  connect_bd_net -net rxp_0_1 [get_bd_ports rxp_0] [get_bd_pins ten_gig_eth_pcs_pma_0/rxp]
-  connect_bd_net -net rxp_1_1 [get_bd_ports rxp_1] [get_bd_pins ten_gig_eth_pcs_pma_1/rxp]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_areset_datapathclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/areset_datapathclk_out] [get_bd_pins proc_sys_reset_1/ext_reset_in] [get_bd_pins ten_gig_eth_pcs_pma_1/areset] [get_bd_pins ten_gig_eth_pcs_pma_1/areset_coreclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_core_status [get_bd_pins ten_gig_eth_pcs_pma_0/core_status] [get_bd_pins system_ila_0/probe0]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_coreclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/coreclk_out] [get_bd_pins eth_mac_10g_fifo_core_0/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_0/xgmii_clk] [get_bd_pins eth_mac_10g_fifo_core_1/logic_clk] [get_bd_pins eth_mac_10g_fifo_core_1/xgmii_clk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk] [get_bd_pins system_ila_0/clk] [get_bd_pins ten_gig_eth_pcs_pma_1/coreclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_drp_req [get_bd_pins ten_gig_eth_pcs_pma_0/drp_req] [get_bd_pins ten_gig_eth_pcs_pma_0/drp_gnt]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_gtrxreset_out [get_bd_pins ten_gig_eth_pcs_pma_0/gtrxreset_out] [get_bd_pins ten_gig_eth_pcs_pma_1/gtrxreset]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_gttxreset_out [get_bd_pins ten_gig_eth_pcs_pma_0/gttxreset_out] [get_bd_pins ten_gig_eth_pcs_pma_1/gttxreset]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplllock_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplllock_out] [get_bd_pins proc_sys_reset_1/dcm_locked] [get_bd_pins ten_gig_eth_pcs_pma_1/qplllock]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutrefclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutrefclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutrefclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_reset_counter_done_out [get_bd_pins ten_gig_eth_pcs_pma_0/reset_counter_done_out] [get_bd_pins ten_gig_eth_pcs_pma_1/reset_counter_done]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txn [get_bd_pins ten_gig_eth_pcs_pma_0/txn] [get_bd_ports txn_0]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txp [get_bd_pins ten_gig_eth_pcs_pma_0/txp] [get_bd_ports txp_0]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txuserrdy_out [get_bd_pins ten_gig_eth_pcs_pma_0/txuserrdy_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txuserrdy]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk2_out [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk2_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk2]
-  connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk_out [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk_out] [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_core_status [get_bd_pins ten_gig_eth_pcs_pma_1/core_status] [get_bd_pins system_ila_0/probe1]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_drp_req [get_bd_pins ten_gig_eth_pcs_pma_1/drp_req] [get_bd_pins ten_gig_eth_pcs_pma_1/drp_gnt]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_txn [get_bd_pins ten_gig_eth_pcs_pma_1/txn] [get_bd_ports txn_1]
-  connect_bd_net -net ten_gig_eth_pcs_pma_1_txp [get_bd_pins ten_gig_eth_pcs_pma_1/txp] [get_bd_ports txp_1]
-  connect_bd_net -net xlconstant_2_dout [get_bd_pins xlconstant_2/dout] [get_bd_pins ten_gig_eth_pcs_pma_0/pma_pmd_type] [get_bd_pins ten_gig_eth_pcs_pma_1/pma_pmd_type]
+  connect_bd_net -net ONE_dout  [get_bd_pins ONE/dout] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/signal_detect] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/signal_detect]
+  connect_bd_net -net ZERO_dout  [get_bd_pins ZERO/dout] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/sim_speedup_control] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/tx_fault] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/tx_fault]
+  connect_bd_net -net clk_in1_0_1  [get_bd_ports clk100] \
+  [get_bd_pins clk_wiz/clk_in1]
+  connect_bd_net -net clk_wiz_clk_out1  [get_bd_pins clk_wiz/clk_out1] \
+  [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/dclk] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/dclk]
+  connect_bd_net -net clk_wiz_locked  [get_bd_pins clk_wiz/locked] \
+  [get_bd_pins proc_sys_reset_0/dcm_locked]
+  connect_bd_net -net configuration_vector_0_1  [get_bd_ports configuration_vector_0] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/configuration_vector]
+  connect_bd_net -net configuration_vector_1_1  [get_bd_ports configuration_vector_1] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/configuration_vector]
+  connect_bd_net -net proc_sys_reset_0_peripheral_reset  [get_bd_pins proc_sys_reset_0/peripheral_reset] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/reset]
+  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn  [get_bd_pins proc_sys_reset_1/peripheral_aresetn] \
+  [get_bd_pins system_ila_0/resetn]
+  connect_bd_net -net proc_sys_reset_1_peripheral_reset  [get_bd_pins proc_sys_reset_1/peripheral_reset] \
+  [get_bd_pins eth_mac_10g_fifo_core_0/logic_rst] \
+  [get_bd_pins eth_mac_10g_fifo_core_0/rx_rst] \
+  [get_bd_pins eth_mac_10g_fifo_core_0/tx_rst] \
+  [get_bd_pins eth_mac_10g_fifo_core_1/logic_rst] \
+  [get_bd_pins eth_mac_10g_fifo_core_1/rx_rst] \
+  [get_bd_pins eth_mac_10g_fifo_core_1/tx_rst]
+  connect_bd_net -net resetn_0_1  [get_bd_ports resetn] \
+  [get_bd_pins clk_wiz/resetn] \
+  [get_bd_pins proc_sys_reset_0/ext_reset_in]
+  connect_bd_net -net rxn_0_1  [get_bd_ports rxn_0] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/rxn]
+  connect_bd_net -net rxn_1_1  [get_bd_ports rxn_1] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/rxn]
+  connect_bd_net -net rxp_0_1  [get_bd_ports rxp_0] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/rxp]
+  connect_bd_net -net rxp_1_1  [get_bd_ports rxp_1] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/rxp]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_areset_datapathclk_out  [get_bd_pins ten_gig_eth_pcs_pma_0/areset_datapathclk_out] \
+  [get_bd_pins proc_sys_reset_1/ext_reset_in] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/areset] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/areset_coreclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_core_status  [get_bd_pins ten_gig_eth_pcs_pma_0/core_status] \
+  [get_bd_pins system_ila_0/probe0]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_coreclk_out  [get_bd_pins ten_gig_eth_pcs_pma_0/coreclk_out] \
+  [get_bd_pins eth_mac_10g_fifo_core_0/logic_clk] \
+  [get_bd_pins eth_mac_10g_fifo_core_0/xgmii_clk] \
+  [get_bd_pins eth_mac_10g_fifo_core_1/logic_clk] \
+  [get_bd_pins eth_mac_10g_fifo_core_1/xgmii_clk] \
+  [get_bd_pins proc_sys_reset_1/slowest_sync_clk] \
+  [get_bd_pins system_ila_0/clk] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/coreclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_drp_req  [get_bd_pins ten_gig_eth_pcs_pma_0/drp_req] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/drp_gnt]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_gtrxreset_out  [get_bd_pins ten_gig_eth_pcs_pma_0/gtrxreset_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/gtrxreset]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_gttxreset_out  [get_bd_pins ten_gig_eth_pcs_pma_0/gttxreset_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/gttxreset]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplllock_out  [get_bd_pins ten_gig_eth_pcs_pma_0/qplllock_out] \
+  [get_bd_pins proc_sys_reset_1/dcm_locked] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/qplllock]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutclk_out  [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutclk_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_qplloutrefclk_out  [get_bd_pins ten_gig_eth_pcs_pma_0/qplloutrefclk_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/qplloutrefclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_reset_counter_done_out  [get_bd_pins ten_gig_eth_pcs_pma_0/reset_counter_done_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/reset_counter_done]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txn  [get_bd_pins ten_gig_eth_pcs_pma_0/txn] \
+  [get_bd_ports txn_0]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txp  [get_bd_pins ten_gig_eth_pcs_pma_0/txp] \
+  [get_bd_ports txp_0]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txuserrdy_out  [get_bd_pins ten_gig_eth_pcs_pma_0/txuserrdy_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/txuserrdy]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk2_out  [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk2_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk2]
+  connect_bd_net -net ten_gig_eth_pcs_pma_0_txusrclk_out  [get_bd_pins ten_gig_eth_pcs_pma_0/txusrclk_out] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/txusrclk]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_core_status  [get_bd_pins ten_gig_eth_pcs_pma_1/core_status] \
+  [get_bd_pins system_ila_0/probe1]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_drp_req  [get_bd_pins ten_gig_eth_pcs_pma_1/drp_req] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/drp_gnt]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_txn  [get_bd_pins ten_gig_eth_pcs_pma_1/txn] \
+  [get_bd_ports txn_1]
+  connect_bd_net -net ten_gig_eth_pcs_pma_1_txp  [get_bd_pins ten_gig_eth_pcs_pma_1/txp] \
+  [get_bd_ports txp_1]
+  connect_bd_net -net xlconstant_2_dout  [get_bd_pins xlconstant_2/dout] \
+  [get_bd_pins ten_gig_eth_pcs_pma_0/pma_pmd_type] \
+  [get_bd_pins ten_gig_eth_pcs_pma_1/pma_pmd_type]
 
   # Create address segments
 
