@@ -100,6 +100,7 @@ $(PROJ_DIR)/%.xpr: Makefile $(SYN_FILES) $(XDC_FILES) $(XCI_FILES) $(TCL_FILES)
 	for x in $(XDC_FILES_REL); do echo "add_files -fileset constrs_1 $$x" >> $(PROJ_DIR)/create_project.tcl; done
 	for x in $(XCI_FILES_REL); do echo "import_ip $$x" >> $(PROJ_DIR)/create_project.tcl; done
 	for x in $(TCL_FILES_REL); do echo "source $$x" >> $(PROJ_DIR)/create_project.tcl; done
+	echo "set_property STEPS.WRITE_BITSTREAM.ARGS.BIN_FILE true [get_runs impl_1]" >> $(PROJ_DIR)/create_project.tcl
 	echo "exit" >> $(PROJ_DIR)/create_project.tcl
 	cd $(PROJ_DIR) && vivado -nojournal -nolog -mode batch -source create_project.tcl
 
@@ -131,7 +132,7 @@ $(PROJ_DIR)/%.runs/impl_1/%_routed.dcp: $(PROJ_DIR)/%.runs/synth_1/%.dcp
 $(PROJ_DIR)/%.bit: $(PROJ_DIR)/%.runs/impl_1/%_routed.dcp
 	echo "open_project $*.xpr" > $(PROJ_DIR)/generate_bit.tcl
 	echo "open_run impl_1" >> $(PROJ_DIR)/generate_bit.tcl
-	echo "write_bitstream -force $*.bit" >> $(PROJ_DIR)/generate_bit.tcl
+	echo "write_bitstream -force -bin_file $*.bit" >> $(PROJ_DIR)/generate_bit.tcl
 	echo "exit" >> $(PROJ_DIR)/generate_bit.tcl
 	cd $(PROJ_DIR) && vivado -nojournal -nolog -mode batch -source generate_bit.tcl
 	mkdir -p rev
